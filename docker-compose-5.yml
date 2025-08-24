@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  glue:
+    image: amazon/aws-glue-libs:5
+    container_name: glue_dev
+    hostname: glue
+    ports:
+      - "8888:8888"   # Jupyter Notebook
+      - "4040:4040"   # Spark UI
+      - "18080:18080" # Spark History Server
+    environment:
+      - AWS_PROFILE=default
+      - DISABLE_SSL=true
+      - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/home/glue_user/spark-logs
+    volumes:
+      - C:\Users\sonuf\.aws:/home/glue_user/.aws   # AWS credentials
+      - C:\Users\sonuf\.kaggle:/home/glue_user/.kaggle # optional Kaggle creds
+      - ./scripts:/home/glue_user/workspace/jupyter_workspace
+      - ./spark-logs:/home/glue_user/spark-logs
+    command: >
+      /bin/bash -c "
+        mkdir -p /home/glue_user/spark-logs &&
+        start-history-server.sh &&
+        jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password=''
+      "
